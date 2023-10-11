@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SourceFiles Include="$(SolutionDir)\**\*.*" Exclude="$(SolutionDir)**\bin\**\*.*;$(SolutionDir)**\obj\**\*.*;$(SolutionDir)Release\**\*.*;$(SolutionDir).vs\**\*.*;$(SolutionDir)**\*.user" />
+    <SourceFiles Include="$(SolutionDir)\**\*.*" Exclude="$(SolutionDir)**\bin\**\*.*;$(SolutionDir)**\obj\**\*.*;$(SolutionDir)Release\**\*.*;$(SolutionDir).vs\**\*.*;$(SolutionDir).git\**\*.*;$(SolutionDir)**\*.user" />
   </ItemGroup>
 
   <Target Name="ZipSolution" AfterTargets="Build">
