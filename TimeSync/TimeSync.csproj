@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <Version>1.2.0.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <Company>Lundemann</Company>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive; compile</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.SharePoint.Client" Version="14.0.4762.1000" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32" />
+    <PackageReference Include="MSBuildTasks" Version="1.5.0.235">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="RestSharp" Version="110.2.0" />
+    <PackageReference Include="Spectre.Console" Version="0.47.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.47.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceFiles Include="$(SolutionDir)\**\*.*" Exclude="$(SolutionDir)**\bin\**\*.*;$(SolutionDir)**\obj\**\*.*;$(SolutionDir)Release\**\*.*;$(SolutionDir).vs\**\*.*;$(SolutionDir)**\*.user" />
+  </ItemGroup>
+
+  <Target Name="ZipSolution" AfterTargets="Build">
+	<Copy SourceFiles="$(SolutionDir)\TimeSync\bin\$(Configuration)\net472\runtimes\win-x64\native\WebView2Loader.dll" DestinationFolder="$(SolutionDir)\TimeSync\bin\$(Configuration)\net472\" />
+	<ItemGroup>
+	  <BinaryFiles Include="$(SolutionDir)\TimeSync\bin\$(Configuration)\net472\TimeSync.*;$(SolutionDir)\TimeSync\bin\$(Configuration)\net472\WebView2Loader.dll" />
+	</ItemGroup>
+
+	<MakeDir Directories="$(SolutionDir)\Release\" />
+
+    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="$(SolutionDir)\obj\SourceCode\%(RecursiveDir)%(Filename)%(Extension)" />
+    <ZipDirectory SourceDirectory="$(SolutionDir)\obj\SourceCode" DestinationFile="$(SolutionDir)\Release\SourceCode.zip" Overwrite="true" />
+    <RemoveDir Directories="$(SolutionDir)\obj\SourceCode" />
+
+    <Copy SourceFiles="@(BinaryFiles)" DestinationFolder="$(SolutionDir)\obj\Binary" />
+    <ZipDirectory SourceDirectory="$(SolutionDir)\obj\Binary" DestinationFile="$(SolutionDir)\Release\Binary.zip" Overwrite="true" />
+    <RemoveDir Directories="$(SolutionDir)\obj\Binary" />
+  </Target>
+
+</Project>
