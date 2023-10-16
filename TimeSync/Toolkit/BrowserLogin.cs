@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Timer = System.Threading.Timer;
 
 namespace TimeSync.Toolkit
 {
@@ -85,8 +86,21 @@ namespace TimeSync.Toolkit
                         }
                     };
 
+                    var timeoutTimer = new Timer(state =>
+                    {
+                        // Show form after 5 seconds without successful login
+                        form.Invoke((Action)(() =>
+                        {
+                            if (!form.IsDisposed)
+                            {
+                                form.WindowState = FormWindowState.Normal;
+                            }
+                        }));
+                    }, null, 5000, Timeout.Infinite);
+
                     form.Focus();
-                    form.ShowDialog();                
+                    form.ShowDialog();
+                    timeoutTimer.Dispose();
                     browser.Dispose();
                 }
                 catch (Exception ex)
