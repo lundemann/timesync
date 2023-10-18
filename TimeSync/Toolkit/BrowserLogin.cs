@@ -88,7 +88,7 @@ namespace TimeSync.Toolkit
 
                     var timeoutTimer = new Timer(state =>
                     {
-                        // Show form after 5 seconds without successful login
+                        // Show form after 8 seconds without successful login
                         form.Invoke((Action)(() =>
                         {
                             if (!form.IsDisposed)
@@ -96,7 +96,7 @@ namespace TimeSync.Toolkit
                                 form.WindowState = FormWindowState.Normal;
                             }
                         }));
-                    }, null, 5000, Timeout.Infinite);
+                    }, null, 8000, Timeout.Infinite);
 
                     form.Focus();
                     form.ShowDialog();
