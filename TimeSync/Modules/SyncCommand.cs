@@ -48,9 +48,22 @@ namespace TimeSync.Modules
 
             var tempoRegistrations = GetTempoRegistrations(tempoProvider, registrant, startDate, endDate);
 
-            var toolkitRegistrations = toolkitProvider.GetTimeRegistrationEntries(registrant, startDate, endDate)
+            var toolkitRegistrationEntries = toolkitProvider.GetTimeRegistrationEntries(registrant, startDate, endDate);
+            var toolkitRegistrations = toolkitRegistrationEntries
                 .GroupBy(e => e.DateExecuted)
                 .ToDictionary(g => g.Key, g => g.GroupBy(e => e.AccountIdentifications.TryGetValue("InvoiceAccount", out var ai) ? ai : null));
+
+            var toolkitWarnings = toolkitRegistrationEntries.Where(r => !string.IsNullOrEmpty(r.Warning)).ToArray();
+            if (toolkitWarnings.Length > 0)
+            {
+                AnsiConsole.MarkupLine("[red]The following warnings were reported on Toolkit registrations:[/]");
+                foreach (var warning in toolkitWarnings)
+                {
+                    AnsiConsole.MarkupLine("{0:yyyy-MM-dd}, account {1}: [yellow]{2}[/]", warning.DateExecuted,
+                        GetAccountTitle(warning.AccountIdentifications.TryGetValue("InvoiceAccount", out var ai) ? ai : null), warning.Warning);
+                }
+                AnsiConsole.WriteLine();
+            }
 
             var dateDiffs = new Dictionary<DateTime, List<(string Account, double Diff)>>();
             var dateMissingRegistrations = new Dictionary<DateTime, List<(string Account, double Hours)>>();

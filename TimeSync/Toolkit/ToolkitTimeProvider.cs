@@ -247,6 +247,7 @@ sec-ch-ua-platform: ""Windows""";
       <FieldRef Name='Hours' />
       <FieldRef Name='DoneDate' />
       <FieldRef Name='CasePONumber' />
+      <FieldRef Name='SynchronizationStatus' />
    </ViewFields>
    <Joins>
       <Join Type='LEFT' ListAlias='{_settings.CaseList}'>
@@ -291,11 +292,27 @@ sec-ch-ua-platform: ""Windows""";
                 Registrant = registrant,
                 TimeUsed = (double)item["Hours"],
                 DateExecuted = SanitizeDateTime(((DateTime)item["DoneDate"]).ToLocalTime()),
+                Warning = GetWarning(item),
                 AccountIdentifications = GetAccountIds(item)
             }).ToList();
         }
 
-        private DateTime SanitizeDateTime(DateTime dt)
+        private static string GetWarning(ListItem item)
+        {
+            var status = (string)item["SynchronizationStatus"];
+            switch (status)
+            {
+                case "Synchronized":
+                    return null;
+                case null:
+                case "":
+                    return "Toolkit case is missing SLA for Timereg synchronization";
+                default:
+                    return $"The registration is not synchronized to Timereg (status '{status}')";
+            }
+        }
+
+        private static DateTime SanitizeDateTime(DateTime dt)
         {
             return new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Local);
         }

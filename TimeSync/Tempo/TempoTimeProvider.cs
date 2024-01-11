@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
@@ -20,6 +19,7 @@ namespace TimeSync.Tempo
         private string _jiraAccessToken;
         private string _tempoAccessToken;
         private string _jiraUrl;
+        private string _tempoUrl;
 
         private const string _jiraTokenRegex = @"[a-zA-Z0-9_\-=]+";
         private const string _tempoTokenRegex = @"[a-zA-Z0-9\-]+";
@@ -28,6 +28,8 @@ namespace TimeSync.Tempo
         {
             if (!config.TryGetValue("JiraUrl", out _jiraUrl))
                 throw new InvalidOperationException("config must contain JiraUrl");
+            if (!config.TryGetValue("TempoUrl", out _tempoUrl))
+                throw new InvalidOperationException("config must contain TempoUrl");
 
             if (credentials != null)
             {
@@ -108,7 +110,7 @@ namespace TimeSync.Tempo
                 return false;
 
             // Validate Tempo access token
-            var tempoRequest = new RestRequest("/core/3/periods");
+            var tempoRequest = new RestRequest("/4/periods");
             tempoRequest.AddQueryParameter("from", DateTime.Now.ToString("yyyy-MM-dd"));
             tempoRequest.AddQueryParameter("to", DateTime.Now.ToString("yyyy-MM-dd"));
             
@@ -122,7 +124,7 @@ namespace TimeSync.Tempo
             }
 
             // Validate Jira access token
-            var jiraRequest = new RestRequest(Path.Combine(_jiraUrl, "rest/api/2/search?maxResults=1"));
+            var jiraRequest = new RestRequest("/rest/api/2/myself");
 
             try
             {
@@ -151,7 +153,7 @@ namespace TimeSync.Tempo
             var tempoClient = TempoRestClient;
             var jiraClient = JiraRestClient;
 
-            var request = new RestRequest($"/core/3/worklogs/user/{atlassianId}");
+            var request = new RestRequest($"/4/worklogs/user/{atlassianId}");
             request.AddQueryParameter("from", from.ToString("yyyy-MM-dd"));
             request.AddQueryParameter("to", to.ToString("yyyy-MM-dd"));
             request.AddQueryParameter("limit", "1000");
@@ -201,18 +203,24 @@ namespace TimeSync.Tempo
             if (!entry.AccountIdentifications.TryGetValue("JiraIssueKey", out var issueKey))
                 throw new InvalidOperationException("The entry must have a JiraIssueKey");
 
+            var jiraClient = JiraRestClient;
+            var jiraRequest = new RestRequest($"/rest/api/2/issue/{issueKey}");
+            var jiraResponse = jiraClient.Get(jiraRequest);
+            ValidateResponse(jiraResponse);
+            dynamic issueData = JToken.Parse(jiraResponse.Content);
+
             var tempoClient = TempoRestClient;
 
             var json = JToken.FromObject(new
             {
-                issueKey = issueKey,
+                issueId = issueData.id,
                 timeSpentSeconds = entry.TimeUsed * 60 * 60,
                 startDate = entry.DateExecuted.ToString("yyyy-MM-dd"),
                 startTime = "00:00:00",
                 authorAccountId = atlassianId
             }).ToString();
 
-            var request = new RestRequest("/core/3/worklogs");
+            var request = new RestRequest("/4/worklogs");
             request.Method = Method.Post;
             request.AddHeader("Accept", "application/json");
             //request.Parameters.Clear();
@@ -251,7 +259,7 @@ namespace TimeSync.Tempo
         {
             get
             {
-                var opts = new RestClientOptions("https://api.tempo.io/")
+                var opts = new RestClientOptions(_tempoUrl)
                 {
                     ThrowOnAnyError = true,
                     Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(_tempoAccessToken, "Bearer")
@@ -282,7 +290,7 @@ namespace TimeSync.Tempo
             if (_accounts == null)
             {
                 _accounts = new Dictionary<int, string>();
-                var tempoAccountRequest = new RestRequest($"/core/3/accounts");
+                var tempoAccountRequest = new RestRequest($"/4/accounts");
                 var tempoAccountResponse = tempoClient.Get(tempoAccountRequest);
                 ValidateResponse(tempoAccountResponse);
 

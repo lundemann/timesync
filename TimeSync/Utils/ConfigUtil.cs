@@ -9,6 +9,7 @@ namespace TimeSync.Utils
         {
             var config = new Dictionary<string, string>();
             config["JiraUrl"] = ConfigurationManager.AppSettings["JiraUrl"];
+            config["TempoUrl"] = ConfigurationManager.AppSettings["TempoUrl"];
             config["TogglApiUrl"] = ConfigurationManager.AppSettings["TogglApiUrl"];
 
             return config;

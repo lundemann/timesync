@@ -24,6 +24,11 @@ namespace TimeSync.Domain
         public DateTime DateExecuted { get; set; }
 
         /// <summary>
+        /// Optionally a warning text about the registration
+        /// </summary>
+        public string Warning { get; set; }
+
+        /// <summary>
         /// The time registration account identifications (key = type, value = id)
         /// </summary>
         public Dictionary<string, string> AccountIdentifications { get; set; }
