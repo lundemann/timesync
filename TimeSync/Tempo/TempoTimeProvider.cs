@@ -290,7 +290,7 @@ namespace TimeSync.Tempo
             if (_accounts == null)
             {
                 _accounts = new Dictionary<int, string>();
-                var tempoAccountRequest = new RestRequest($"/4/accounts");
+                var tempoAccountRequest = new RestRequest($"/4/accounts?offset=0&limit=5000");
                 var tempoAccountResponse = tempoClient.Get(tempoAccountRequest);
                 ValidateResponse(tempoAccountResponse);
 

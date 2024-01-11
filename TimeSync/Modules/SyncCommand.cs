@@ -131,7 +131,7 @@ namespace TimeSync.Modules
 
                     foreach (var diff in dateDiffs[d].OrderBy(da => da.Account))
                     {
-                        AnsiConsole.MarkupLine("{0:yyyy-MM-dd}, account {1}: [yellow]{2:F2}[/]", d, GetAccountTitle(diff.Account), diff.Diff);
+                        AnsiConsole.MarkupLine("{0:yyyy-MM-dd}, account {1}: [yellow]{2}[/]", d, GetAccountTitle(diff.Account), GetDiffText(diff.Diff));
                     }
                 }
 
@@ -200,6 +200,13 @@ namespace TimeSync.Modules
         private string GetAccountTitle(string account)
         {
             return _accountTitles.TryGetValue(account, out var title) ? title : account;
+        }
+
+        private static string GetDiffText(double diff)
+        {
+            if (diff < 0)
+                return $"{-diff:F2} hours missing in Toolkit";
+            return $"{diff:F2} hours too many in Toolkit";
         }
 
         private Dictionary<DateTime, IEnumerable<IGrouping<string, TimeRegistrationEntry>>> GetTempoRegistrations(ITimeProvider tempoProvider, Registrant registrant, DateTime startDate,
