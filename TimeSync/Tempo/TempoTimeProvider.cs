@@ -320,7 +320,7 @@ namespace TimeSync.Tempo
                 }
 
                 var accountString = data.fields.customfield_12320 != null ? (string)data.fields.customfield_12320.value : null;
-                invoiceAccount = invoiceAccount ?? accountString?.Split(' ')[0];
+                invoiceAccount = invoiceAccount ?? MatchAccount(accountString);
                 ids["JiraIssueUrl"] = issueUrl;
                 ids["JiraIssueKey"] = (string)data.key;
                 ids["InvoiceAccount"] = invoiceAccount;
@@ -330,6 +330,15 @@ namespace TimeSync.Tempo
             }
 
             return ids;
+        }
+
+        private static string MatchAccount(string accountString)
+        {
+            if (accountString == null)
+                return null;
+
+            var match = Regex.Match(accountString, @"^\S+(?=\s)");
+            return match.Success ? match.Value : accountString.Split(' ')[0];
         }
 
         public void ClearAccountIdentificationsCache()
